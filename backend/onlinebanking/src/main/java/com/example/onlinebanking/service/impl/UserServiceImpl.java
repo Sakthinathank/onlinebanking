@@ -1,5 +1,6 @@
 package com.example.onlinebanking.service.impl;
 
+import com.example.onlinebanking.dto.LoginDto;
 import com.example.onlinebanking.dto.UserDto;
 import com.example.onlinebanking.model.User;
 import com.example.onlinebanking.repository.UserRepository;
@@ -13,15 +14,16 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    // ---------------------- REGISTER ----------------------
     @Override
     public String registerUser(UserDto dto) {
 
-        // Check if email already exists
+        // 1. Check if email already exists
         if (userRepository.existsByEmail(dto.getEmail())) {
             return "Email already registered!";
         }
 
-        // Convert DTO → Entity (User object)
+        // 2. Convert DTO → Entity
         User user = new User();
         user.setFullName(dto.getFullName());
         user.setEmail(dto.getEmail());
@@ -29,9 +31,27 @@ public class UserServiceImpl implements UserService {
         user.setPhone(dto.getPhone());
         user.setAddress(dto.getAddress());
 
-        // Save user to database
+        // 3. Save user to database
         userRepository.save(user);
 
         return "User registered successfully!";
+    }
+
+
+    // ---------------------- LOGIN ----------------------
+    @Override
+    public String loginUser(LoginDto loginDto) {
+
+        // 1. Check if user exists using email
+        User user = userRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 2. Check password match
+        if (!user.getPassword().equals(loginDto.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        // 3. Success
+        return "Login successful";
     }
 }
