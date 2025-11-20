@@ -1,13 +1,9 @@
 package com.example.onlinebanking.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +23,12 @@ public class User {
     private String phone;
 
     private String address;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Account> accounts;
+
+  //-------------- GETTERS & SETTERS|||||||-|
 
     public Long getId() {
         return id;
@@ -76,7 +78,12 @@ public class User {
         this.address = address;
     }
 
-    // getters and setters
+    // MISSING
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+    }
 }
-
-
