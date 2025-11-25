@@ -16,46 +16,53 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Override
-    public User getUserByEmail(String email) {
-        return null;
-    }
-
-    // ---------------- Create New Account ----------------
+    // ---------------- CREATE NEW ACCOUNT ----------------
     @Override
     public Account createAccount(User user) {
 
         Account account = new Account();
 
-        // Generate a random 10–12 digit account number
+        // Generate 10-digit random account number
         account.setAccountNumber(generateAccountNumber());
 
-        // Set starting balance as 0
         account.setBalance(0.0);
-
-        // Link account with logged-in user
         account.setUser(user);
 
         return accountRepository.save(account);
     }
 
-    // ---------------- Get all accounts of a user ----------------
+    // ---------------- GET USER ACCOUNTS ----------------
     @Override
     public List<Account> getUserAccounts(User user) {
         return accountRepository.findByUser(user);
     }
 
-    // ---------------- Get account by account number ----------------
+    // ---------------- GET ACCOUNT BY NUMBER ----------------
     @Override
     public Account getAccountByNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
-    // ---------------- Generate Account Number ----------------
+    // ---------------- GET BALANCE ----------------
+    @Override
+    public double getBalance(String accountNumber, User user) {
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        // ensure account belongs to logged-in user
+        if (!account.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not your account!");
+        }
+
+        return account.getBalance();
+    }
+
+    // ---------------- GENERATE ACCOUNT NO ----------------
     private String generateAccountNumber() {
         Random random = new Random();
-        long number = 1000000000L + random.nextLong(9000000000L); // 10-digit number
+        long number = 1000000000L + random.nextLong(9000000000L); // 10-digit
         return String.valueOf(number);
     }
 }

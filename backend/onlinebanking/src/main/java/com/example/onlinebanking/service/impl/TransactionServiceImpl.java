@@ -55,6 +55,20 @@ public class TransactionServiceImpl implements TransactionService {
         return "Amount withdrawn successfully!";
     }
 
+    // ---------------------- GET BALANCE ----------------------
+    @Override
+    public double getBalance(String accountNumber, User user) {
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        if (!account.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not your account!");
+        }
+
+        return account.getBalance();
+    }
+
     // ---------------------- TRANSFER ----------------------
     @Override
     public String transfer(String fromAccountNumber, String toAccountNumber, double amount, User user) {
@@ -79,13 +93,14 @@ public class TransactionServiceImpl implements TransactionService {
         accountRepository.save(fromAcc);
         accountRepository.save(toAcc);
 
+        // log transactions
         saveTransaction(fromAcc, user, amount, "TRANSFER");
         saveTransaction(toAcc, user, amount, "DEPOSIT");
 
         return "Transfer successful!";
     }
 
-    // ---------------------- GET USER TRANSACTIONS ----------------------
+    // ---------------------- GET TRANSACTIONS ----------------------
     @Override
     public List<Transaction> getUserTransactions(User user) {
         return transactionRepository.findByUser(user);

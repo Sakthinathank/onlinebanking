@@ -30,16 +30,23 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Log incoming request
         System.out.println("➡️ FILTER: Incoming request = " + request.getRequestURI());
 
+        // Get the URL path
         String path = request.getServletPath();
 
-        // Skip JWT validation for login & register
-        if (path.startsWith("/api/auth")) {
+        // -----------------------------------------------------
+        // 1. BYPASS JWT FILTER for login & register endpoints
+        // -----------------------------------------------------
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/register")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // -----------------------------------------------------
+        // 2. Extract JWT token from Authorization header
+        // -----------------------------------------------------
         final String authHeader = request.getHeader("Authorization");
 
         String email = null;
@@ -47,13 +54,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
+
             try {
                 email = jwtUtil.extractUsername(jwt);
-            } catch (Exception e) {
-                System.out.println("⚠️ FILTER: Token parse error - " + e.getMessage());
+            } catch (Exception ex) {
+                System.out.println("⚠️ JWT PARSE ERROR: " + ex.getMessage());
             }
         }
 
+        // -----------------------------------------------------
+        // 3. Validate token & set authentication
+        // -----------------------------------------------------
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -68,10 +79,14 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
+        // -----------------------------------------------------
+        // 4. Continue filter chain
+        // -----------------------------------------------------
         filterChain.doFilter(request, response);
-    }}
-
+    }
+}

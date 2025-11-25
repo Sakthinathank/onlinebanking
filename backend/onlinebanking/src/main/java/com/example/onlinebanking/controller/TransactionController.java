@@ -69,4 +69,15 @@ public class TransactionController {
 
         return transactionService.getUserTransactions(user);
     }
+    @GetMapping("/balance/{accountNumber}")
+    public Double getBalance(@PathVariable String accountNumber,
+                             Authentication authentication) {
+
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
+
+        return transactionService.getBalance(accountNumber, user);
+    }
+
+
 }

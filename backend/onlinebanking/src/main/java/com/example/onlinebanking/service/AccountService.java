@@ -7,11 +7,12 @@ import java.util.List;
 
 public interface AccountService {
 
-    User getUserByEmail(String email);
-
     Account createAccount(User user);
 
     List<Account> getUserAccounts(User user);
 
     Account getAccountByNumber(String accountNumber);
+
+    double getBalance(String accountNumber, User user);
+
 }
